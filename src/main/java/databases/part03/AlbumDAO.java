@@ -1,7 +1,12 @@
 package databases.part03;
 
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
-
 import databases.part02.Artist;
 
 /**
@@ -35,6 +40,25 @@ public class AlbumDAO {
      *         sorted by AlbumId in ascending order.
      */
     public List<Album> getAlbumsByArtist(Artist artist) {
+        List<Album> albums = new ArrayList<>();
+        String sql = "SELECT AlbumId, Title, ArtistId FROM Album WHERE ArtistId = ? ORDER BY AlbumId ASC";
+        try (Connection conn = DriverManager.getConnection(connectionString);
+                PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setLong(1, artist.getId());
+
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    albums.add(new Album(
+                            rs.getLong("AlbumId"),
+                            rs.getString("Title"),
+                            rs.getLong("ArtistId")));
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return albums;
         /*
          * hint: use the artist.getId() method to get the artist's id and add it to the
          * SQL query using PreparedStatement's setLong() method. See the previous hint
@@ -46,7 +70,6 @@ public class AlbumDAO {
          *
          * Make sure to sort the albums by AlbumId in ascending order (low to high).
          */
-        return null;
     }
 
     /**
@@ -57,6 +80,21 @@ public class AlbumDAO {
      * @return true if the album was added successfully, false otherwise.
      */
     public boolean addAlbum(Album album) {
+        String sql = "INSERT INTO Album (Title, ArtistId) VALUES (?, ?)";
+        try (Connection conn = DriverManager.getConnection(connectionString);
+                PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setString(1, album.getTitle());
+            stmt.setLong(2, album.getArtistId());
+
+            int rowsAffected = stmt.executeUpdate();
+            return rowsAffected > 0;
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+
         /*
          * hint 1: use PreparedStatement's setString() and setLong() methods to
          * add the album's title and artist id to the SQL query. Leave the AlbumId
@@ -67,7 +105,6 @@ public class AlbumDAO {
          *
          * Remember to use the `connectionString` instead of hard coding it ;)
          */
-        return false;
     }
 
     /**
@@ -78,6 +115,21 @@ public class AlbumDAO {
      * @return true if the album was updated successfully, false otherwise.
      */
     public boolean updateAlbum(Album album) {
+        String sql = "UPDATE Album SET Title = ?, ArtistId = ? WHERE AlbumId = ?";
+        try (Connection conn = DriverManager.getConnection(connectionString);
+                PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setString(1, album.getTitle());
+            stmt.setLong(2, album.getArtistId());
+            stmt.setLong(3, album.getId());
+
+            int rowsAffected = stmt.executeUpdate();
+            return rowsAffected > 0;
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
         /*
          * hint 1: use PreparedStatement's setString() and setLong() methods to
          * add the album's title and artist id to the SQL query. Do not change the
@@ -86,7 +138,6 @@ public class AlbumDAO {
          * Remember to use the `connectionString` instead of hard coding it, otherwise
          * your tests will be deleting albums from your actual database!
          */
-        return false;
     }
 
     /**
@@ -97,12 +148,24 @@ public class AlbumDAO {
      * @return true if the album was deleted successfully, false otherwise.
      */
     public boolean deleteAlbum(Album album) {
+        String sql = "DELETE FROM Album WHERE AlbumId = ?";
+        try (Connection conn = DriverManager.getConnection(connectionString);
+                PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setLong(1, album.getId());
+
+            int rowsAffected = stmt.executeUpdate();
+            return rowsAffected > 0;
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
         /*
          * See hints for the methods above.
          *
          * Remember to use the `connectionString` instead of hard coding it, otherwise
          * your tetss will be deleting albums from your actual database!
          */
-        return false;
     }
 }

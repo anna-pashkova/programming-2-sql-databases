@@ -1,5 +1,10 @@
 package databases.part02;
 
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -33,7 +38,20 @@ public class ArtistDAO {
      */
     public List<Artist> getArtists() {
         List<Artist> artists = new ArrayList<>();
-
+        String sql = "SELECT ArtistId, Name FROM Artist ORDER BY Name";
+        try (Connection connection = DriverManager.getConnection(connectionString);
+            PreparedStatement statement = connection.prepareStatement(sql);
+            ResultSet resultSet = statement.executeQuery()) {
+           while (resultSet.next()) {
+                long id = resultSet.getLong("ArtistId");
+                String name = resultSet.getString("Name");
+                artists.add(new Artist(id, name));
+                    }     
+            } catch (SQLException e) {
+                e.printStackTrace();
+        }
+        return artists;
+        }
         /*
          * hint: see the class from part 1 for an example of how to connect to the
          * database and retrieve data from it. This time create new Artist objects
@@ -44,8 +62,6 @@ public class ArtistDAO {
          * make tests run against your actual database, which may have unexpected data.
          */
 
-        return artists;
-    }
 
     /**
      * Returns the artist with the specified id, or null if no artist exists with
@@ -56,6 +72,22 @@ public class ArtistDAO {
      *         that id.
      */
     public Artist getArtistById(long id) {
+        String sql = "SELECT ArtistId, Name FROM Artist WHERE ArtistId = ?";
+        try (Connection connection = DriverManager.getConnection(connectionString);
+            PreparedStatement statement = connection.prepareStatement(sql)) {
+            statement.setLong(1, id);
+
+            try (ResultSet resultSet = statement.executeQuery()) {
+     
+                if (resultSet.next()) {
+                    long artistId = resultSet.getLong("ArtistId");
+                    String name = resultSet.getString("Name");
+                    return new Artist(artistId, name);
+     }
+ }      
+    } catch (SQLException e) {
+        e.printStackTrace();
+}
         /*
          * hint: use similar code to the getArtists() method above, but add a WHERE
          * clause to the SQL query to only retrieve the artist with the specified id.

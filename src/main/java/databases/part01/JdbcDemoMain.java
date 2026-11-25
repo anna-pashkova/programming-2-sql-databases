@@ -42,7 +42,7 @@ public class JdbcDemoMain {
             connection = DriverManager.getConnection(JDBC_CONNECTION_STRING);
 
             // Create a prepared statement to execute a query
-            preparedStatement = connection.prepareStatement("SELECT ArtistId, Name FROM Artist ORDER BY ArtistId ASC");
+            preparedStatement = connection.prepareStatement("SELECT ArtistId, Name FROM Artist ORDER BY Name");
 
             // Execute the query and get the result set
             resultSet = preparedStatement.executeQuery();
@@ -56,6 +56,7 @@ public class JdbcDemoMain {
              * the loop terminates.
              */
             while (resultSet.next()) {
+                long id = resultSet.getLong("ArtistId");
 
                 /*
                  * getLong() and getString() are used to retrieve the values from the current
@@ -65,7 +66,7 @@ public class JdbcDemoMain {
                  */
                 String name = resultSet.getString("Name");
 
-                System.out.println(name);
+                System.out.println(name + " (" + id + ")");
             }
         } catch (SQLException e) {
             /*
